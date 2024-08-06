@@ -1,6 +1,8 @@
 defmodule Servy.Handler do
   require Logger
 
+  @pages_path Path.expand("../../pages", __DIR__)
+
   def handle(request) do
     request
     |> parse()
@@ -43,19 +45,15 @@ defmodule Servy.Handler do
   end
 
   def route(%{method: "GET", path: "/about"} = conv) do
-    case File.read("pages/about.html") do
-      {:ok, contents} -> %{conv | status: 200, resp_body: contents}
-      {:error, :enoent} -> %{conv | status: 404, resp_body: "File not found"}
-      {:error, reason} -> %{conv | status: 500, resp_body: "File error: #{reason}"}
-    end
+    @pages_path
+    |> Path.join("about.html")
+    |> handle_file(conv)
   end
 
   def route(%{method: "GET", path: "/bears/new"} = conv) do
-    case File.read("pages/form.html") do
-      {:ok, contents} -> %{conv | status: 200, resp_body: contents}
-      {:error, :enoent} -> %{conv | status: 404, resp_body: "File not found"}
-      {:error, reason} -> %{conv | status: 500, resp_body: "File error: #{reason}"}
-    end
+    @pages_path
+    |> Path.join("form.html")
+    |> handle_file(conv)
   end
 
   def route(%{method: "GET", path: "/bears/" <> id} = conv) do
@@ -67,11 +65,9 @@ defmodule Servy.Handler do
   end
 
   def route(%{method: "GET", path: "/pages/" <> file} = conv) do
-    case File.read("pages/" <> file <> ".html") do
-      {:ok, contents} -> %{conv | status: 200, resp_body: contents}
-      {:error, :enoent} -> %{conv | status: 404, resp_body: "File not found"}
-      {:error, reason} -> %{conv | status: 500, resp_body: "File error: #{reason}"}
-    end
+    @pages_path
+    |> Path.join("#{file}.html")
+    |> handle_file(conv)
   end
 
   def route(conv) do
@@ -114,6 +110,14 @@ defmodule Servy.Handler do
       404 => "Not Found",
       500 => "Internal Server Error"
     }[code]
+  end
+
+  defp handle_file(path, conv) do
+    case File.read(path) do
+      {:ok, contents} -> %{conv | status: 200, resp_body: contents}
+      {:error, :enoent} -> %{conv | status: 404, resp_body: "File not found"}
+      {:error, reason} -> %{conv | status: 500, resp_body: "File error: #{reason}"}
+    end
   end
 end
 
