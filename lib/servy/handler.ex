@@ -1,9 +1,14 @@
 defmodule Servy.Handler do
+  require Logger
+
   def handle(request) do
     request
     |> parse()
+    |> rewrite_path()
     |> log()
     |> route()
+    |> track()
+    |> emojify()
     |> format_response()
   end
 
@@ -12,31 +17,65 @@ defmodule Servy.Handler do
     %{method: method, path: path, resp_body: "", status: nil}
   end
 
-  def log(conv) do
-    IO.inspect(conv)
+  def rewrite_path(%{path: "/wildlife"} = conv) do
+    %{conv | path: "/wildthings"}
   end
 
-  def route(%{path: "/wildthings"} = conv) do
+  def rewrite_path(%{path: "/bears?id=" <> id} = conv) do
+    %{conv | path: "/bears/" <> id}
+  end
+
+  def rewrite_path(conv) do
+    conv
+  end
+
+  def log(conv) do
+    Logger.info(conv)
+    conv
+  end
+
+  def route(%{method: "GET", path: "/wildthings"} = conv) do
     %{conv | resp_body: "Bears, Lions, Tigers", status: 200}
   end
 
-  def route(%{path: "/bears"} = conv) do
+  def route(%{method: "GET", path: "/bears"} = conv) do
     %{conv | resp_body: "Teddy, Smokey, Paddington", status: 200}
   end
-  
-  def route(%{path: "/bears/" <> id} = conv) do
+
+  def route(%{method: "GET", path: "/bears/" <> id} = conv) do
     %{conv | resp_body: "Bear #{id}", status: 200}
+  end
+
+  def route(%{method: "DELETE", path: "/bears/" <> _id} = conv) do
+    %{conv | resp_body: "Bears must never be deleted!", status: 403}
   end
 
   def route(conv) do
     %{conv | resp_body: "No #{conv.path} here", status: 404}
   end
 
+  def track(%{status: 404, path: path} = conv) do
+    Logger.warning("Warning: #{path} is on the loose")
+    conv
+  end
+
+  def track(conv) do
+    conv
+  end
+
+  def emojify(%{status: 200, resp_body: body} = conv) do
+    %{conv | resp_body: "🎉 " <> body <> " 🎉"}
+  end
+
+  def emojify(conv) do
+    conv
+  end
+
   def format_response(conv) do
     """
     HTTP/1.1 #{conv.status} #{status_reason(conv.status)}
     Content-Type: text/html
-    Content-Length: #{conv.resp_body |> String.length()}
+    Content-Length: #{byte_size(conv.resp_body)}
 
     #{conv.resp_body}
     """
@@ -86,6 +125,36 @@ request |> Servy.Handler.handle() |> IO.puts()
 
 request = """
 GET /bears/1 HTTP/1.1
+Host: example.com
+User-Agent: ExampleBrowser/1.0
+Accept: */*
+
+"""
+
+request |> Servy.Handler.handle() |> IO.puts()
+
+request = """
+DELETE /bears/1 HTTP/1.1
+Host: example.com
+User-Agent: ExampleBrowser/1.0
+Accept: */*
+
+"""
+
+request |> Servy.Handler.handle() |> IO.puts()
+
+request = """
+GET /wildlife HTTP/1.1
+Host: example.com
+User-Agent: ExampleBrowser/1.0
+Accept: */*
+
+"""
+
+request |> Servy.Handler.handle() |> IO.puts()
+
+request = """
+GET /bears?id=1 HTTP/1.1
 Host: example.com
 User-Agent: ExampleBrowser/1.0
 Accept: */*
