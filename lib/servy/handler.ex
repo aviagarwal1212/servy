@@ -8,7 +8,7 @@ defmodule Servy.Handler do
     |> log()
     |> route()
     |> track()
-    |> emojify()
+    # |> emojify()
     |> format_response()
   end
 
@@ -42,12 +42,36 @@ defmodule Servy.Handler do
     %{conv | resp_body: "Teddy, Smokey, Paddington", status: 200}
   end
 
+  def route(%{method: "GET", path: "/about"} = conv) do
+    case File.read("pages/about.html") do
+      {:ok, contents} -> %{conv | status: 200, resp_body: contents}
+      {:error, :enoent} -> %{conv | status: 404, resp_body: "File not found"}
+      {:error, reason} -> %{conv | status: 500, resp_body: "File error: #{reason}"}
+    end
+  end
+
+  def route(%{method: "GET", path: "/bears/new"} = conv) do
+    case File.read("pages/form.html") do
+      {:ok, contents} -> %{conv | status: 200, resp_body: contents}
+      {:error, :enoent} -> %{conv | status: 404, resp_body: "File not found"}
+      {:error, reason} -> %{conv | status: 500, resp_body: "File error: #{reason}"}
+    end
+  end
+
   def route(%{method: "GET", path: "/bears/" <> id} = conv) do
     %{conv | resp_body: "Bear #{id}", status: 200}
   end
 
   def route(%{method: "DELETE", path: "/bears/" <> _id} = conv) do
     %{conv | resp_body: "Bears must never be deleted!", status: 403}
+  end
+
+  def route(%{method: "GET", path: "/pages/" <> file} = conv) do
+    case File.read("pages/" <> file <> ".html") do
+      {:ok, contents} -> %{conv | status: 200, resp_body: contents}
+      {:error, :enoent} -> %{conv | status: 404, resp_body: "File not found"}
+      {:error, reason} -> %{conv | status: 500, resp_body: "File error: #{reason}"}
+    end
   end
 
   def route(conv) do
@@ -155,6 +179,36 @@ request |> Servy.Handler.handle() |> IO.puts()
 
 request = """
 GET /bears?id=1 HTTP/1.1
+Host: example.com
+User-Agent: ExampleBrowser/1.0
+Accept: */*
+
+"""
+
+request |> Servy.Handler.handle() |> IO.puts()
+
+request = """
+GET /about HTTP/1.1
+Host: example.com
+User-Agent: ExampleBrowser/1.0
+Accept: */*
+
+"""
+
+request |> Servy.Handler.handle() |> IO.puts()
+
+request = """
+GET /bears/new HTTP/1.1
+Host: example.com
+User-Agent: ExampleBrowser/1.0
+Accept: */*
+
+"""
+
+request |> Servy.Handler.handle() |> IO.puts()
+
+request = """
+GET /pages/about HTTP/1.1
 Host: example.com
 User-Agent: ExampleBrowser/1.0
 Accept: */*
