@@ -1,38 +1,53 @@
 defmodule Servy.Plugins do
   require Logger
 
+  alias Servy.Conv
 
-  def rewrite_path(%{path: "/wildlife"} = conv) do
+  def rewrite_path(%Conv{path: "/wildlife"} = conv) do
     %{conv | path: "/wildthings"}
   end
 
-  def rewrite_path(%{path: "/bears?id=" <> id} = conv) do
+  def rewrite_path(%Conv{path: "/bears?id=" <> id} = conv) do
     %{conv | path: "/bears/" <> id}
   end
 
-  def rewrite_path(conv) do
+  def rewrite_path(%Conv{} = conv) do
     conv
   end
 
-  def log(conv) do
-    Logger.info(conv)
+  def log(%Conv{} = conv) do
+    if Mix.env() != :test do
+      Logger.info(conv)
+    end
+
     conv
   end
 
-  def track(%{status: 404, path: path} = conv) do
-    Logger.warning("Warning: #{path} is on the loose")
+  def track(%Conv{status: 404, path: path} = conv) do
+    if Mix.env() != :test do
+      Logger.warning("Warning: #{path} is on the loose")
+    end
+
     conv
   end
 
-  def track(conv) do
+  def track(%Conv{} = conv) do
     conv
   end
 
-  def emojify(%{status: 200, resp_body: body} = conv) do
+  def emojify(%Conv{status: 200, resp_body: body} = conv) do
     %{conv | resp_body: "🎉 " <> body <> " 🎉"}
   end
 
-  def emojify(conv) do
+  def emojify(%Conv{} = conv) do
     conv
+  end
+
+  def handle_file(path, %Conv{} = conv) do
+    case File.read(path) do
+      {:ok, contents} -> %{conv | status: 200, resp_body: contents}
+      {:error, :enoent} -> %{conv | status: 404, resp_body: "File not found"}
+      {:error, reason} -> %{conv | status: 500, resp_body: "File error: #{reason}"}
+    end
   end
 end
