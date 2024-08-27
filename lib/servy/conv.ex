@@ -7,6 +7,7 @@ defmodule Servy.Conv do
     field(:path, String.t(), default: "")
     field(:params, %{}, default: %{})
     field(:headers, %{}, default: %{})
+    field(:resp_content_type, String.t(), default: "text/html")
     field(:resp_body, String.t(), default: "")
     field(:status, integer(), default: nil)
   end
