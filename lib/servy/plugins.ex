@@ -23,7 +23,7 @@ defmodule Servy.Plugins do
     conv
   end
 
-  def track(%Conv{status: 404, path: path} = conv) do
+  def track(conv = %Conv{status: 404, path: path}) do
     if Mix.env() != :test do
       Logger.warning("Warning: #{path} is on the loose")
     end
