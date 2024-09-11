@@ -1,7 +1,6 @@
 defmodule Servy.Api.BearController do
   alias Servy.Conv
 
-  @spec index(%Conv{}) :: %Conv{}
   def index(conv = %Conv{}) do
     json =
       Servy.Wildthings.list_bears()
