@@ -10,7 +10,7 @@ defmodule Servy.Handler do
     request
     |> Parser.parse()
     |> Plugins.rewrite_path()
-    |> Plugins.log()
+    # |> Plugins.log()
     |> route()
     |> Plugins.track()
     |> format_response()
@@ -20,6 +20,16 @@ defmodule Servy.Handler do
   Routes the request to the appropriate function, and responds with
   an updated Conv struct.
   """
+  def route(%Conv{method: "GET", path: "/kaboom"} = _conv) do
+    raise "Kaboom!"
+  end
+
+  def route(%Conv{method: "GET", path: "/hibernate/" <> time} = conv) do
+    time |> String.to_integer() |> :timer.sleep()
+
+    %{conv | resp_body: "Awake!", status: 200}
+  end
+
   def route(conv = %Conv{method: "GET", path: "/wildthings"}) do
     %{conv | resp_body: "Bears, Lions, Tigers", status: 200}
   end
