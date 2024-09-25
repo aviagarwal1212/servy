@@ -19,7 +19,7 @@ defmodule Servy.HttpServer do
   end
 
   def serve(client_socket) do
-    IO.puts("#{self() |> inspect()}: working on it")
+    Logger.debug("#{self() |> inspect()}: working on it")
 
     client_socket
     |> read_request()
@@ -29,7 +29,8 @@ defmodule Servy.HttpServer do
 
   def read_request(client_socket) do
     {:ok, request} = :gen_tcp.recv(client_socket, 0)
-    Logger.info("Received request:\n#{request}\n")
+    Logger.info("Received a request")
+    Logger.debug("Received request:\n#{request}\n")
     request
   end
 
@@ -45,7 +46,18 @@ defmodule Servy.HttpServer do
 
   def write_response(response, client_socket) do
     :ok = :gen_tcp.send(client_socket, response)
-    Logger.info("Sending response:\n#{response}\n")
+    Logger.info("Sending a response")
+    Logger.debug("Sending response:\n#{response}\n")
     :gen_tcp.close(client_socket)
+  end
+
+  def generate_another_response(_request) do
+    """
+    HTTP/1.1 200 OK\r
+    Content-Type: text/plain\r
+    Content-Length: 13\r
+    \r
+    Hello, World!
+    """
   end
 end
