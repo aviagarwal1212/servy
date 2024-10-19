@@ -2,25 +2,20 @@ defmodule Servy.Conv do
   use TypedStruct
   alias __MODULE__
 
-  @type params :: %{String.t() => any()}
-  @type headers :: %{String.t() => any()}
-
   typedstruct do
-    field(:method, String.t(), default: "")
-    field(:path, String.t(), default: "")
-    field(:params, params(), default: %{})
-    field(:headers, headers(), default: %{})
-    field(:resp_content_type, String.t(), default: "text/html")
-    field(:resp_body, String.t(), default: "")
-    field(:status, non_neg_integer(), default: nil)
+    field :method, String.t(), default: ""
+    field :path, String.t(), default: ""
+    field :params, %{String.t() => any()}
+    field :headers, %{String.t() => any()}
+    field :resp_content_type, String.t(), default: "text/html"
+    field :resp_body, String.t(), default: ""
+    field :status, non_neg_integer() | nil, default: nil
   end
 
-  @spec full_status(Conv.t()) :: String.t()
-  def full_status(conv = %Conv{}) do
+  def full_status(%Conv{} = conv) do
     "#{conv.status} #{status_reason(conv.status)}"
   end
 
-  @spec status_reason(integer()) :: String.t()
   defp status_reason(code) do
     %{
       200 => "OK",

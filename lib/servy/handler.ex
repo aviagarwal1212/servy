@@ -1,4 +1,5 @@
 defmodule Servy.Handler do
+  @moduledoc false
   @pages_path Path.expand("pages", File.cwd!())
 
   alias Servy.Conv
@@ -105,7 +106,7 @@ defmodule Servy.Handler do
     |> Plugins.handle_file(conv)
   end
 
-  def route(conv = %Conv{}) do
+  def route(%Conv{} = conv) do
     %{conv | resp_body: "No #{conv.path} here!", status: 404}
   end
 

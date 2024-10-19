@@ -1,9 +1,9 @@
 defmodule Servy.Tracker do
   @doc """
   Simulates sending a request to an external API
-  to get the GPS coordinates of a wildthing.
+  to get the GPS coordinates of a wild_thing.
   """
-  def get_location(wildthing) do
+  def get_location(wild_thing) do
     # CODE GOES HERE TO SEND A REQUEST TO THE EXTERNAL API
 
     # Sleep to simulate the API delay:
@@ -11,12 +11,13 @@ defmodule Servy.Tracker do
 
     # Example responses returned from the API:
     locations = %{
-      "roscoe" => %{lat: "44.4280 N", lng: "110.5885 W"},
-      "smokey" => %{lat: "48.7596 N", lng: "113.7870 W"},
-      "brutus" => %{lat: "43.7904 N", lng: "110.6818 W"},
-      "bigfoot" => %{lat: "29.0469 N", lng: "98.8667 W"}
+      "roscoe" => %{latitude: "44.4280 N", longitude: "110.5885 W"},
+      "smokey" => %{latitude: "48.7596 N", longitude: "113.7870 W"},
+      "brutus" => %{latitude: "43.7904 N", longitude: "110.6818 W"},
+      "bigfoot" => %{latitude: "29.0469 N", longitude: "98.8667 W"},
+      "haaku" => %{latitude: "45.5110 N", longitude: "115.8712 W"}
     }
 
-    Map.get(locations, wildthing)
+    Map.get(locations, wild_thing)
   end
 end

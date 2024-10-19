@@ -1,7 +1,7 @@
 defmodule Servy.Api.BearController do
   alias Servy.Conv
 
-  def index(conv = %Conv{}) do
+  def index(%Conv{} = conv) do
     json =
       Servy.Wildthings.list_bears()
       |> Poison.encode!(strict_keys: true)
